@@ -1,5 +1,5 @@
 import yt_dlp
-import os
+import os #imports
 
 download_folder = "downloads"
 
