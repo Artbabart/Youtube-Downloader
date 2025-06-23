@@ -9,6 +9,10 @@ os.makedirs(download_folder, exist_ok=True)
 @app.route('/')
 def index():
     return render_template('ytdownloaderfront.html')  # load in the ytdownloaderfront.html
+
+if __name__ == '__main__':
+    app.run(port=5001)  # Itt állítod be a portot, pl. 5001
+
 @app.route('/download', methods=['POST'])
 def download_video():
     print(">>> /download endpoint meghívva")
