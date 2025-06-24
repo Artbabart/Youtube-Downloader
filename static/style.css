@@ -47,7 +47,7 @@ button:hover {
 #status {
     margin-top: 1.5rem;
     font-size: 1rem;
-    color: #333;
+    color: #f54f4d;
 }
 
 @media (max-width: 500px) {

@@ -10,9 +10,6 @@ os.makedirs(download_folder, exist_ok=True)
 def index():
     return render_template('ytdownloaderfront.html')  # load in the ytdownloaderfront.html
 
-if __name__ == '__main__':
-    app.run(port=5001)  # Itt állítod be a portot, pl. 5001
-
 @app.route('/download', methods=['POST'])
 def download_video():
     print(">>> /download endpoint meghívva")
@@ -52,4 +49,4 @@ def download_video():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5001, debug=True)
