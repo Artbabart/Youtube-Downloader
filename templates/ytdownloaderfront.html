@@ -4,34 +4,64 @@
     <meta charset="UTF-8">
     <title>YouTube Downloader</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
     <h1>YouTube Downloader</h1>
-    <input type="text" id="url" placeholder="Insert link">
+    <input type="text" id="url" placeholder="Insert YouTube link">
     <button onclick="downloadVideo()">Download</button>
     <p id="status"></p>
 
     <script>
         async function downloadVideo() {
-            const url = document.getElementById('url').value;
+            const urlInput = document.getElementById('url');
             const status = document.getElementById('status');
-            status.textContent = "Downloading...";
+            const url = urlInput.value.trim();
 
-            const response = await fetch('/download', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ url: url })
-            });
+            if (!url) {
+                status.textContent = "Kérlek, adj meg egy URL-t.";
+                return;
+            }
 
-            const result = await response.json();
+            status.textContent = "Letöltés folyamatban...";
 
-            if (response.ok) {
-                status.textContent = result.message;
-            } else {
-                status.textContent = "Error: " + result.error;
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    status.textContent = "Hiba: " + (error.error || "Ismeretlen hiba");
+                    return;
+                }
+
+                const blob = await response.blob();
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = "video.mp4";
+
+                // Próbáljuk kinyerni a fájlnevet a fejlécből
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="?(.+?)"?$/);
+                    if (match) {
+                        filename = match[1];
+                    }
+                }
+
+                // Fájl letöltése
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+
+                status.textContent = "Sikeres letöltés: " + filename;
+
+            } catch (err) {
+                status.textContent = "Hiba történt: " + err.message;
             }
         }
     </script>
