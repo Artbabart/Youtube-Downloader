@@ -20,15 +20,6 @@ def download_video():
     if not url:
         return jsonify({'error': 'Missing URL'}), 400
 
-    # Környezeti változóból kiolvasott cookie tartalom
-    cookie_data = os.getenv('YTDLP_COOKIES')
-    cookie_path = None
-
-    if cookie_data:
-        cookie_path = '/tmp/cookies.txt'
-        with open(cookie_path, 'w') as f:
-            f.write(cookie_data)
-
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
             ydl_opts = {
@@ -36,25 +27,23 @@ def download_video():
                 'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
                 'noplaylist': True,
                 'quiet': True,
+                'cookiefile': 'cookies.txt',
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0',
                 }
             }
-            # Ha van cookie fájl, adjuk hozzá az opciókhoz
-            if cookie_path:
-                ydl_opts['cookiefile'] = cookie_path
 
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                filename = ydl.prepare_filename(info)
+        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+        
+        with open(filename,'rb') as f:
+            file_data = BytesIO(f.read())
 
-            with open(filename, 'rb') as f:
-                file_data = BytesIO(f.read())
+        file_data.seek(0)
+        download_name = os.path.basename(filename)
 
-            file_data.seek(0)
-            download_name = os.path.basename(filename)
-
-            return send_file(
+        return send_file(
                 file_data,
                 as_attachment=True,
                 download_name=download_name,
